@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.richard.task.Status.*;
 
 
 
@@ -29,8 +30,8 @@ class TaskJsonTest{
     void setUp(){
         //initialize an array of tasks
         tasks = Arrays.array(
-            new Task(1L, "Back-end Task","Develop and test back-end task", "undone", LocalDateTime.of(2025, 5, 23, 13, 48, 30)),
-            new Task(2L, "Front-end Task","Develop front-end task", "undone", LocalDateTime.of(2025, 5, 23, 13, 50, 30))
+            new Task(1L, "Back-end Task","Develop and test back-end task", IN_PROGRESS.label(), LocalDateTime.of(2025, 5, 23, 13, 48, 30)),
+            new Task(2L, "Front-end Task","Develop front-end task", TODO.label(), LocalDateTime.of(2025, 5, 23, 13, 50, 30))
         );
     }
 
@@ -45,7 +46,7 @@ class TaskJsonTest{
         assertThat(json.write(task)).hasJsonPathStringValue("@.description");
         assertThat(json.write(task)).extractingJsonPathStringValue("@.description").isEqualTo("Develop and test back-end task");
         assertThat(json.write(task)).hasJsonPathStringValue("@.status");
-        assertThat(json.write(task)).extractingJsonPathStringValue("@.status").isEqualTo("undone");
+        assertThat(json.write(task)).extractingJsonPathStringValue("@.status").isEqualTo("In Progress");
         assertThat(json.write(task)).hasJsonPathStringValue("@.dueDateTime");
         assertThat(json.write(task)).extractingJsonPathStringValue("@.dueDateTime").isEqualTo("2025-05-23T13:48:30");
     }
@@ -85,14 +86,14 @@ class TaskJsonTest{
                   "id": 1,
                   "title": "Back-end Task",
                   "description": "Develop and test back-end task",
-                  "status": "undone",
+                  "status": "In Progress",
                   "dueDateTime": "2025-05-23T13:48:30"
                  },
                  {
                   "id": 2,
                   "title": "Front-end Task",
                   "description": "Develop front-end task",
-                  "status": "undone",
+                  "status": "To do",
                   "dueDateTime": "2025-05-23T13:50:30"
                   }
                 ]
