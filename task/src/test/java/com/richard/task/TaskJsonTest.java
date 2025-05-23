@@ -59,17 +59,17 @@ class TaskJsonTest{
                     "id": 1,
                     "title": "Back-end Task",
                     "description": "Develop and test back-end task",
-                    "status": "undone",
+                    "status": "In Progress",
                     "dueDateTime": "2025-05-23T13:48:30"
                 }
                 """;
 
         assertThat(json.parse(expected))
-                .isEqualTo(new Task(1L, "Back-end Task","Develop and test back-end task", "undone", LocalDateTime.of(2025, 5, 23, 13, 48, 30)));
+                .isEqualTo(new Task(1L, "Back-end Task","Develop and test back-end task", "In Progress", LocalDateTime.of(2025, 5, 23, 13, 48, 30)));
         assertThat(json.parseObject(expected).id()).isEqualTo(1L);
         assertThat(json.parseObject(expected).title()).isEqualTo("Back-end Task");
         assertThat(json.parseObject(expected).description()).isEqualTo("Develop and test back-end task");
-        assertThat(json.parseObject(expected).status()).isEqualTo("undone");
+        assertThat(json.parseObject(expected).status()).isEqualTo("In Progress");
         assertThat(json.parseObject(expected).dueDateTime()).isEqualTo("2025-05-23T13:48:30");
     }
 
