@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +19,7 @@ record Task(
 
         @NotBlank
         @Size(min = 2, max = 100, message = TITLE_SIZE_VALIDATION_MESSAGE)
-        @Pattern(regexp = "^[A-Za-z0-9\u00A0]+$", message = TITLE_REGEXP_VALIDATION_MESSAGE)
+        @Pattern(regexp = "^[A-Za-z0-9- ]+$", message = TITLE_REGEXP_VALIDATION_MESSAGE)
         String title,
 
         @Size(min = 0, max = 500, message = DESCRIPTION_SIZE_VALIDATION_MESSAGE)
@@ -28,6 +29,7 @@ record Task(
         @ValidStatus
         String status,
 
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         @FutureOrPresent
         LocalDateTime dueDateTime
 ){

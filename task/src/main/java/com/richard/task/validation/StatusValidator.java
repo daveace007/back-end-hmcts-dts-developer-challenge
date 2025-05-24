@@ -13,7 +13,7 @@ public class StatusValidator implements ConstraintValidator<ValidStatus, String>
     public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
         return value != null && Stream
                 .of(Status.values())
-                .map(Enum::name)
+                .map(Status::label)
                 .anyMatch(label->label.equalsIgnoreCase(value));
     }
 }
