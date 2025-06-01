@@ -1,6 +1,7 @@
 package com.richard.task;
 
 import static com.richard.task.constant.Constant.*;
+
 import com.richard.task.validation.ValidStatus;
 import jakarta.validation.constraints.*;
 import org.springframework.data.annotation.Id;
@@ -29,6 +30,6 @@ record Task(
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         @Future
         LocalDateTime dueDateTime
-){
+) {
 
-        }
+}

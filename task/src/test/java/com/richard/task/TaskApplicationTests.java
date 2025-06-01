@@ -113,6 +113,21 @@ class TaskApplicationTests {
     }
 
     @Test
+    void shouldNotCreateANewTaskWithAnExistingTitle(){
+        // define a task with an already existing title
+        Task task = new Task(
+                null,
+                "Front-end Task",
+                "This may result in a conflict",
+                TODO.label(), LocalDateTime.of(3000, 6, 1, 20, 20, 20)
+        );
+        // make a post request
+        ResponseEntity<Void> response = template.postForEntity("/tasks", task, Void.class);
+        // confirm bad conflict (409) request
+        assertThat(response.getStatusCode()).isEqualTo(CONFLICT);
+    }
+
+    @Test
     void shouldNotCreateANewTaskWithInvalidStatus() {
         //define a task with an invalid status
         Task task = new Task(
