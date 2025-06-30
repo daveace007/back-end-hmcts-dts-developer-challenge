@@ -2,8 +2,11 @@ package com.richard.task;
 
 
 import com.richard.task.error.TaskException;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
+import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +34,10 @@ public class TaskController {
     }
 
     @PostMapping
+    @ApiResponses({
+            @ApiResponse(responseCode="201", description = "Created"),
+            @ApiResponse(responseCode ="209", description = "Task with this title already exists")
+    })
     private ResponseEntity<Void> createTask(@RequestBody @Valid Task newTaskRequest, UriComponentsBuilder ucb) throws Exception{
         if (repository.existsByTitle(newTaskRequest.title())){
             String message = "Task with title: %s already exists".formatted(newTaskRequest.title());
@@ -51,6 +58,10 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ok"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
     private ResponseEntity<Task> findById(@PathVariable Long id) {
         Optional<Task> optionalTask = repository.findById(id);
         if (optionalTask.isPresent()) {
@@ -60,7 +71,12 @@ public class TaskController {
         return ResponseEntity.notFound().build();
     }
 
+
     @GetMapping
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ok")
+    })
+    @PageableAsQueryParam
     private ResponseEntity<List<Task>> findAll(Pageable pageDetails) {
         PageRequest request = PageRequest.of(
                 pageDetails.getPageNumber(),
@@ -72,6 +88,10 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "No Content"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
     private ResponseEntity<Void> updateTask(@PathVariable Long id, @Valid @RequestBody Task payload) {
         if (repository.existsById(id)) {
             Task updatedTask = new Task(
@@ -88,6 +108,10 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "No Content"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
     private ResponseEntity<Void> deleteByTask(@PathVariable Long id) {
         if (repository.existsById(id)) {
             repository.deleteById(id);

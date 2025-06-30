@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,11 @@ public class TaskGlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<TaskErrorResponse> handleExceptions(TaskException ex, HttpServletRequest request){
         return createResponse(ex.getMessage(), request, ex.getStatus());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<TaskErrorResponse> handleExceptions(Exception ex, HttpServletRequest request){
+        return createResponse(ex.getMessage(), request, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({NumberFormatException.class, IllegalArgumentException.class})
