@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("api/tasks")
+@CrossOrigin(origins="http://localhost:3000")
 public class TaskController {
 
 
@@ -77,14 +78,14 @@ public class TaskController {
             @ApiResponse(responseCode = "200", description = "Ok")
     })
     @PageableAsQueryParam
-    private ResponseEntity<List<Task>> findAll(Pageable pageDetails) {
+    private ResponseEntity<Page<Task>> findAll(Pageable pageDetails) {
         PageRequest request = PageRequest.of(
                 pageDetails.getPageNumber(),
                 pageDetails.getPageSize(),
                 pageDetails.getSortOr(Sort.by(Sort.Direction.ASC, "id"))
         );
         Page<Task> page = repository.findAll(request);
-        return ResponseEntity.ok(page.getContent());
+        return ResponseEntity.ok(page);
     }
 
     @PutMapping("/{id}")
