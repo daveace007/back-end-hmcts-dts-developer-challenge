@@ -55,7 +55,7 @@ class TaskApplicationTests {
                 LocalDateTime.of(3000, 5, 23, 13, 48, 30)
         );
 
-        ResponseEntity<Void> createResponse = template.postForEntity("/tasks", task, Void.class);
+        ResponseEntity<Void> createResponse = template.postForEntity("/api/tasks", task, Void.class);
         assertThat(createResponse.getStatusCode()).isEqualTo(CREATED);
 
         URI locationOfNewTask = createResponse.getHeaders().getLocation();
@@ -90,7 +90,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -107,7 +107,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -122,7 +122,7 @@ class TaskApplicationTests {
                 TODO.label(), LocalDateTime.of(3000, 6, 1, 20, 20, 20)
         );
         // make a post request
-        ResponseEntity<Void> response = template.postForEntity("/tasks", task, Void.class);
+        ResponseEntity<Void> response = template.postForEntity("api/tasks", task, Void.class);
         // confirm bad conflict (409) request
         assertThat(response.getStatusCode()).isEqualTo(CONFLICT);
     }
@@ -139,7 +139,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -156,7 +156,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -164,7 +164,7 @@ class TaskApplicationTests {
 
     @Test
     void shouldReturnATask() {
-        ResponseEntity<String> response = template.getForEntity("/tasks/2", String.class);
+        ResponseEntity<String> response = template.getForEntity("api/tasks/2", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
@@ -183,13 +183,13 @@ class TaskApplicationTests {
 
     @Test
     void shouldNotReturnATaskWithAnUnknownId() {
-        ResponseEntity<String> response = template.getForEntity("/task/9999", String.class);
+        ResponseEntity<String> response = template.getForEntity("api/task/9999", String.class);
         assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
     }
 
     @Test
     void shouldReturnAllTasks() {
-        ResponseEntity<String> response = template.getForEntity("/tasks", String.class);
+        ResponseEntity<String> response = template.getForEntity("api/tasks", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
@@ -211,7 +211,7 @@ class TaskApplicationTests {
     @Test
     void shouldReturnAPageOfTasks() {
         ResponseEntity<String> response = template
-                .getForEntity("/tasks?page=0&size=1", String.class);
+                .getForEntity("api/tasks?page=0&size=1", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
@@ -222,7 +222,7 @@ class TaskApplicationTests {
     @Test
     void shouldReturnASortedPageOfTask() {
         ResponseEntity<String> response = template
-                .getForEntity("/tasks?page=0&size=1&sort=dueDateTime,desc", String.class);
+                .getForEntity("api/tasks?page=0&size=1&sort=dueDateTime,desc", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
@@ -236,7 +236,7 @@ class TaskApplicationTests {
     @Test
     void shouldReturnASortedPageOfTaskWithNoParametersButDefaultValues() {
         ResponseEntity<String> response = template
-                .getForEntity("/tasks", String.class);
+                .getForEntity("api/tasks", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
@@ -254,11 +254,11 @@ class TaskApplicationTests {
         //request an update
         HttpEntity<Task> request = new HttpEntity<>(taskUpdate);
         //request the  updated task
-        ResponseEntity<Void> updateResponse = template.exchange("/tasks/2", PUT, request, Void.class);
+        ResponseEntity<Void> updateResponse = template.exchange("api/tasks/2", PUT, request, Void.class);
         assertThat(updateResponse.getStatusCode()).isEqualTo(NO_CONTENT);
 
         //verify update operation
-        ResponseEntity<String> getResponse = template.getForEntity("/tasks/2", String.class);
+        ResponseEntity<String> getResponse = template.getForEntity("api/tasks/2", String.class);
         assertThat(getResponse.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(getResponse.getBody());
@@ -275,7 +275,7 @@ class TaskApplicationTests {
 
         //perform an update request
         HttpEntity<Task> request = new HttpEntity<>(unknownTask);
-        ResponseEntity<Void> response = template.exchange("/tasks/99999", PUT, request, Void.class);
+        ResponseEntity<Void> response = template.exchange("api/tasks/99999", PUT, request, Void.class);
 
         //confirm that task is non-existent
         assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
@@ -285,11 +285,11 @@ class TaskApplicationTests {
     void shouldDeleteTask() {
         //create a delete request
         ResponseEntity<Void> deleteResponse = template.exchange(
-                "/tasks/1", DELETE, null, Void.class
+                "api/tasks/1", DELETE, null, Void.class
         );
         assertThat(deleteResponse.getStatusCode()).isEqualTo(NO_CONTENT);
         //Get the deleted task
-        ResponseEntity<String> getResponse = template.getForEntity("/task/1", String.class);
+        ResponseEntity<String> getResponse = template.getForEntity("api/task/1", String.class);
         //confirm that deleted task is not found
         assertThat(getResponse.getStatusCode()).isEqualTo(NOT_FOUND);
     }
@@ -298,7 +298,7 @@ class TaskApplicationTests {
     void shouldNotDeleteATaskThatDoesNotExist() {
         // create a delete request
         ResponseEntity<Void> deleteResponse = template.exchange(
-                "/tasks/999999", DELETE, null, Void.class
+                "api/tasks/999999", DELETE, null, Void.class
         );
 
         //confirm task not found

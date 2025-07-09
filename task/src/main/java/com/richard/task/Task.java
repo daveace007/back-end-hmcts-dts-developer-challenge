@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 @Table
-record Task(
+public record Task(
         @Id
         Long id,
 

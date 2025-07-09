@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/tasks")
+@RequestMapping("/api/tasks")
 @CrossOrigin(origins="http://localhost:3000")
 public class TaskController {
 
@@ -79,12 +79,32 @@ public class TaskController {
     })
     @PageableAsQueryParam
     private ResponseEntity<Page<Task>> findAll(Pageable pageDetails) {
-        PageRequest request = PageRequest.of(
-                pageDetails.getPageNumber(),
-                pageDetails.getPageSize(),
-                pageDetails.getSortOr(Sort.by(Sort.Direction.ASC, "id"))
-        );
+        PageRequest request = getPageRequest(pageDetails);
         Page<Task> page = repository.findAll(request);
+        return ResponseEntity.ok(page);
+    }
+
+
+
+    @GetMapping("/search-title")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ok")
+    })
+    @PageableAsQueryParam
+    private ResponseEntity<Page<Task>> findByTitle(@RequestParam("title")String title, Pageable pageable){
+        PageRequest pageRequest = getPageRequest(pageable);
+        Page<Task> page = repository.findByTitleContainingIgnoreCase(title, pageRequest);
+        return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/search-status")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ok")
+    })
+    @PageableAsQueryParam
+    private ResponseEntity<Page<Task>> findByStatus(@RequestParam("status") String status, Pageable pageDetails){
+        PageRequest request = getPageRequest(pageDetails);
+        Page<Task> page = repository.findByStatus(status, request);
         return ResponseEntity.ok(page);
     }
 
@@ -113,7 +133,7 @@ public class TaskController {
             @ApiResponse(responseCode = "204", description = "No Content"),
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
-    private ResponseEntity<Void> deleteByTask(@PathVariable Long id) {
+    private ResponseEntity<Void> deleteTaskById(@PathVariable Long id) {
         if (repository.existsById(id)) {
             repository.deleteById(id);
             return ResponseEntity.noContent().build();
@@ -121,5 +141,12 @@ public class TaskController {
         return ResponseEntity.notFound().build();
     }
 
+    private PageRequest getPageRequest(Pageable pageDetails) {
+        return PageRequest.of(
+                pageDetails.getPageNumber(),
+                pageDetails.getPageSize(),
+                pageDetails.getSortOr(Sort.by(Sort.Direction.ASC, "id"))
+        );
+    }
 
 }
