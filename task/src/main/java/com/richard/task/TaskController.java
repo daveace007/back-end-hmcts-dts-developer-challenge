@@ -23,7 +23,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins="http://localhost:3000")
 public class TaskController {
 
 
@@ -52,7 +51,7 @@ public class TaskController {
                 newTaskRequest.dueDateTime()
         );
         Task savedTask = repository.save(task);
-        URI taskLocation = ucb.path("tasks/{id}")
+        URI taskLocation = ucb.path("api/tasks/{id}")
                 .buildAndExpand(savedTask.id())
                 .toUri();
         return ResponseEntity.created(taskLocation).build();

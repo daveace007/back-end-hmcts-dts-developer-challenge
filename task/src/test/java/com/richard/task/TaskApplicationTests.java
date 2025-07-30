@@ -3,10 +3,12 @@ package com.richard.task;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 
 import static org.springframework.http.HttpMethod.*;
@@ -14,6 +16,8 @@ import static org.springframework.http.HttpStatus.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -38,6 +42,7 @@ class TaskApplicationTests {
     @Autowired
     TaskRepository repository;
 
+
     @Test
     void contextLoads() {
         assertThat(application).isNotNull();
@@ -49,8 +54,8 @@ class TaskApplicationTests {
     void shouldCreateANewTask() {
         Task task = new Task(
                 null,
-                "Back-end Task",
-                "Develop and test back-end task",
+                "Back-end Unit Test Task",
+                "Test back-end API",
                 IN_PROGRESS.label(),
                 LocalDateTime.of(3000, 5, 23, 13, 48, 30)
         );
@@ -70,8 +75,8 @@ class TaskApplicationTests {
         String dueDateTime = context.read("$.dueDateTime");
 
         assertThat(id).isNotNull();
-        assertThat(title).isEqualTo("Back-end Task");
-        assertThat(description).isEqualTo("Develop and test back-end task");
+        assertThat(title).isEqualTo("Back-end Unit Test Task");
+        assertThat(description).isEqualTo("Test back-end API");
         assertThat(status).isEqualTo("In Progress");
         assertThat(dueDateTime).isEqualTo("3000-05-23T13:48:30");
 
@@ -90,7 +95,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("/api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -107,7 +112,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("/api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -117,12 +122,12 @@ class TaskApplicationTests {
         // define a task with an already existing title
         Task task = new Task(
                 null,
-                "Front-end Task",
+                "Draft Marketing Strategy",
                 "This may result in a conflict",
                 TODO.label(), LocalDateTime.of(3000, 6, 1, 20, 20, 20)
         );
         // make a post request
-        ResponseEntity<Void> response = template.postForEntity("api/tasks", task, Void.class);
+        ResponseEntity<Void> response = template.postForEntity("/api/tasks", task, Void.class);
         // confirm bad conflict (409) request
         assertThat(response.getStatusCode()).isEqualTo(CONFLICT);
     }
@@ -139,7 +144,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("/api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -156,7 +161,7 @@ class TaskApplicationTests {
         );
         //make a request to create the task
         HttpEntity<Task> createRequest = new HttpEntity<>(task);
-        ResponseEntity<Void> createResponse = template.exchange("api/tasks", POST, createRequest, Void.class);
+        ResponseEntity<Void> createResponse = template.exchange("/api/tasks", POST, createRequest, Void.class);
         //confirm bad request (400) status code
         assertThat(createResponse.getStatusCode()).isEqualTo(BAD_REQUEST);
     }
@@ -164,7 +169,7 @@ class TaskApplicationTests {
 
     @Test
     void shouldReturnATask() {
-        ResponseEntity<String> response = template.getForEntity("api/tasks/2", String.class);
+        ResponseEntity<String> response = template.getForEntity("/api/tasks/2", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
@@ -175,76 +180,114 @@ class TaskApplicationTests {
         String dueDateTime = context.read("$.dueDateTime");
 
         assertThat(id).isEqualTo(2);
-        assertThat(title).isEqualTo("Front-end Task");
-        assertThat(description).isEqualTo("Develop front-end task");
-        assertThat(status).isEqualTo("To do");
-        assertThat(dueDateTime).isEqualTo("2025-05-23T13:50:30");
+        assertThat(title).isEqualTo("Optimize Database Indexes");
+        assertThat(description).isEqualTo("Analyze current SQL performance logs and update inefficient indexes for large tables.");
+        assertThat(status).isEqualTo("In Progress");
+        assertThat(dueDateTime).isEqualTo("2025-11-27T13:33:35");
+    }
+
+    @Test
+    void shouldReturnATaskByTitle(){
+        ResponseEntity<String> response = template.getForEntity(
+                "/api/tasks/search-title?title=Draft Marketing Strategy",
+                String.class
+        );
+        assertThat(response.getStatusCode()).isEqualTo(OK);
+
+        DocumentContext context = JsonPath.parse(response.getBody());
+        Number id = context.read("$.content[0].id");
+        String title = context.read("$.content[0].title");
+        String description = context.read("$.content[0].description");
+        String status = context.read("$.content[0].status");
+        String dueDateTime = context.read("$.content[0].dueDateTime");
+
+        assertThat(id).isNotNull();
+        assertThat(id).isNotEqualTo(0);
+        assertThat(title).isEqualTo("Draft Marketing Strategy");
+        assertThat(description).isEqualTo("Outline quarterly marketing goals, audience segments, campaign themes, and KPIs to guide the digital team.");
+        assertThat(status).isEqualTo(DEFERRED.label());
+        assertThat(dueDateTime).isEqualTo("2025-11-23T20:33:35");
+    }
+
+    @Test
+    void shouldReturnATaskByStatus(){
+        ResponseEntity<String> response = template.getForEntity(
+                "/api/tasks/search-status?status=Deferred",
+                String.class
+        );
+        assertThat(response.getStatusCode()).isEqualTo(OK);
+
+        DocumentContext context = JsonPath.parse(response.getBody());
+        String status = context.read("$.content[0].status");
+        assertThat(status).isEqualTo(DEFERRED.label());
+
     }
 
     @Test
     void shouldNotReturnATaskWithAnUnknownId() {
-        ResponseEntity<String> response = template.getForEntity("api/task/9999", String.class);
+        ResponseEntity<String> response = template.getForEntity("/api/task/9999", String.class);
         assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
     }
 
     @Test
     void shouldReturnAllTasks() {
-        ResponseEntity<String> response = template.getForEntity("api/tasks", String.class);
+        ResponseEntity<String> response = template.getForEntity("/api/tasks", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
-        int tasksCount = context.read("$.length()");
-        assertThat(tasksCount).isEqualTo(2);
+        int tasksCount = context.read("$.content.length()");
+        assertThat(tasksCount).isEqualTo(20);
         JSONArray ids = context.read("$..id");
         JSONArray titles = context.read("$..title");
         JSONArray descriptions = context.read("$..description");
         JSONArray statuses = context.read("$..status");
         JSONArray dueDateTimes = context.read("$..dueDateTime");
 
-        assertThat(ids).containsExactlyInAnyOrder(2, 1);
-        assertThat(titles).contains("Front-end Task", "Back-end Task");
-        assertThat(descriptions).contains("Develop and test back-end task", "Develop front-end task");
+        assertThat(ids).containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+        assertThat(titles).contains("Draft Marketing Strategy", "Optimize Database Indexes");
+        assertThat(descriptions).contains("Prepare a test matrix for core UI workflows including accessibility and cross-browser checks.");
         assertThat(statuses).contains("To do", "In Progress");
-        assertThat(dueDateTimes).contains("2025-05-23T13:48:30", "2025-05-23T13:50:30");
+        assertThat(dueDateTimes).contains("2025-11-27T13:33:35", "2025-11-23T20:33:35");
     }
 
     @Test
     void shouldReturnAPageOfTasks() {
         ResponseEntity<String> response = template
-                .getForEntity("api/tasks?page=0&size=1", String.class);
+                .getForEntity("/api/tasks?page=0&size=1", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
-        JSONArray page = context.read("$[*]");
+        JSONArray page = context.read("$.content[*]");
         assertThat(page.size()).isEqualTo(1);
     }
 
     @Test
     void shouldReturnASortedPageOfTask() {
         ResponseEntity<String> response = template
-                .getForEntity("api/tasks?page=0&size=1&sort=dueDateTime,desc", String.class);
+                .getForEntity("/api/tasks?page=0&size=1&sort=dueDateTime,desc", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
-        JSONArray page = context.read("$[*]");
+        JSONArray page = context.read("$.content[*]");
         assertThat(page.size()).isEqualTo(1);
+        System.out.print(page);
 
-        String dueDateTime = context.read("$[0].dueDateTime");
-        assertThat(dueDateTime).isEqualTo("2025-05-23T13:50:30");
+        String dueDateTime = context.read("$.content[0].dueDateTime");
+        assertThat(dueDateTime).isEqualTo("2025-12-29T09:50:00");
     }
 
     @Test
     void shouldReturnASortedPageOfTaskWithNoParametersButDefaultValues() {
         ResponseEntity<String> response = template
-                .getForEntity("api/tasks", String.class);
+                .getForEntity("/api/tasks", String.class);
         assertThat(response.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(response.getBody());
-        JSONArray page = context.read("$[*]");
-        assertThat(page.size()).isEqualTo(2);
+        JSONArray page = context.read("$.content[*]");
+        assertThat(page.size()).isEqualTo(20);
 
         JSONArray ids = context.read("$..id");
-        assertThat(ids).containsExactly(1, 2);
+        assertThat(ids).containsExactly(1, 2, 3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20);
     }
 
     @Test
@@ -254,11 +297,11 @@ class TaskApplicationTests {
         //request an update
         HttpEntity<Task> request = new HttpEntity<>(taskUpdate);
         //request the  updated task
-        ResponseEntity<Void> updateResponse = template.exchange("api/tasks/2", PUT, request, Void.class);
+        ResponseEntity<Void> updateResponse = template.exchange("/api/tasks/2", PUT, request, Void.class);
         assertThat(updateResponse.getStatusCode()).isEqualTo(NO_CONTENT);
 
         //verify update operation
-        ResponseEntity<String> getResponse = template.getForEntity("api/tasks/2", String.class);
+        ResponseEntity<String> getResponse = template.getForEntity("/api/tasks/2", String.class);
         assertThat(getResponse.getStatusCode()).isEqualTo(OK);
 
         DocumentContext context = JsonPath.parse(getResponse.getBody());
@@ -275,7 +318,7 @@ class TaskApplicationTests {
 
         //perform an update request
         HttpEntity<Task> request = new HttpEntity<>(unknownTask);
-        ResponseEntity<Void> response = template.exchange("api/tasks/99999", PUT, request, Void.class);
+        ResponseEntity<Void> response = template.exchange("/api/tasks/99999", PUT, request, Void.class);
 
         //confirm that task is non-existent
         assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
@@ -285,11 +328,11 @@ class TaskApplicationTests {
     void shouldDeleteTask() {
         //create a delete request
         ResponseEntity<Void> deleteResponse = template.exchange(
-                "api/tasks/1", DELETE, null, Void.class
+                "/api/tasks/1", DELETE, null, Void.class
         );
         assertThat(deleteResponse.getStatusCode()).isEqualTo(NO_CONTENT);
         //Get the deleted task
-        ResponseEntity<String> getResponse = template.getForEntity("api/task/1", String.class);
+        ResponseEntity<String> getResponse = template.getForEntity("/api/task/1", String.class);
         //confirm that deleted task is not found
         assertThat(getResponse.getStatusCode()).isEqualTo(NOT_FOUND);
     }
@@ -298,7 +341,7 @@ class TaskApplicationTests {
     void shouldNotDeleteATaskThatDoesNotExist() {
         // create a delete request
         ResponseEntity<Void> deleteResponse = template.exchange(
-                "api/tasks/999999", DELETE, null, Void.class
+                "/api/tasks/999999", DELETE, null, Void.class
         );
 
         //confirm task not found

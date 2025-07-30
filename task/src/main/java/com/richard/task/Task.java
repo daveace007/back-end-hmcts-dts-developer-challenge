@@ -20,7 +20,7 @@ public record Task(
         @Pattern(regexp = TITLE_REGEXP, message = TITLE_REGEXP_VALIDATION_MESSAGE)
         String title,
 
-        @Size(max = 500, message = DESCRIPTION_SIZE_VALIDATION_MESSAGE)
+        @Size(max = 1500, message = DESCRIPTION_SIZE_VALIDATION_MESSAGE)
         @Pattern(regexp = DESCRIPTION_REGEXP, message = DESCRIPTION_REGEXP_VALIDATION_MESSAGE)
         String description,
 
