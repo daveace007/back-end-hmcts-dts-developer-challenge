@@ -99,3 +99,6 @@ INSERT INTO Task (TITLE, DESCRIPTION, STATUS, DUE_DATE_TIME) VALUES
 ('Schedule Customer Advisory Board', 'Plan a virtual session with key customers to gather strategic input. Prepare agenda and pre-read materials.', 'Pending', '2025-11-18T13:10:00'),
 ('Clean Up S3 Buckets', 'Review S3 storage usage and archive or delete stale objects. Enable lifecycle policies for backups.', 'Completed', '2025-10-09T12:20:00'),
 ('Measure Voice Command Accuracy', 'Evaluate the accuracy of voice commands in new prototype app. Log false positives and tune NLP models.', 'To do', '2025-12-29T09:50:00');
+
+
+INSERT INTO ORIGIN (URI) VALUES ('http://localhost:3000');

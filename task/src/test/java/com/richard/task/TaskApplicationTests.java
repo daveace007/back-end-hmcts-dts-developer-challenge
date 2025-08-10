@@ -3,12 +3,10 @@ package com.richard.task;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 
 import static org.springframework.http.HttpMethod.*;
@@ -16,11 +14,10 @@ import static org.springframework.http.HttpStatus.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,17 +34,25 @@ class TaskApplicationTests {
     TaskApplication application;
 
     @Autowired
-    TaskController controller;
+    TaskController taskController;
 
     @Autowired
-    TaskRepository repository;
+    OriginController originController;
+
+    @Autowired
+    TaskRepository taskRepository;
+
+    @Autowired
+    OriginRepository originRepository;
 
 
     @Test
     void contextLoads() {
         assertThat(application).isNotNull();
-        assertThat(controller).isNotNull();
-        assertThat(repository).isNotNull();
+        assertThat(taskController).isNotNull();
+        assertThat(originController).isNotNull();
+        assertThat(taskRepository).isNotNull();
+        assertThat(originRepository).isNotNull();
     }
 
     @Test
@@ -348,5 +353,75 @@ class TaskApplicationTests {
         assertThat(deleteResponse.getStatusCode()).isEqualTo(NOT_FOUND);
     }
 
+    @Test
+    void shouldCreateNewOrigin(){
+        Origin origin = new Origin(null, "http://127.0.0.1:3000");
+        ResponseEntity<Void> createResponse = template.postForEntity("/api/origins", origin, Void.class);
+        assertThat(createResponse.getStatusCode()).isEqualTo(CREATED);
+
+    }
+
+    @Test
+    void shouldReturnAnOrigin(){
+        ResponseEntity<String> response = template.getForEntity("/api/origins/1", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(OK);
+
+        DocumentContext context = JsonPath.parse(response.getBody());
+        Number id = context.read("$.id");
+        String uri = context.read("$.uri");
+
+        assertThat(id).isEqualTo(1);
+        assertThat(uri).isEqualTo("http://localhost:3000");
+    }
+
+    @Test
+    void shouldReturnAllOrigins(){
+        ResponseEntity<String> response = template.getForEntity("/api/origins", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(OK);
+
+        DocumentContext context = JsonPath.parse(response.getBody());
+        int originCount = context.read("$.length()");
+        assertThat(originCount).isEqualTo(1);
+        JSONArray ids  = context.read("$..id");
+        JSONArray uris = context.read("$..uri");
+
+        assertThat(ids).containsExactlyInAnyOrder(1);
+        assertThat(uris).contains("http://localhost:3000");
+
+    }
+
+    @Test
+    void shouldUpdateExistingOrigin(){
+        Origin originUpdate = new Origin(null, "http://127.0.0.1:3000");
+
+        HttpEntity<Origin> request = new HttpEntity<>(originUpdate);
+
+        ResponseEntity<Void> updateResponse = template.exchange("/api/origins/1", PUT, request, Void.class);
+        assertThat(updateResponse.getStatusCode()).isEqualTo(NO_CONTENT);
+
+        ResponseEntity<String> getResponse = template.getForEntity("/api/origins/1", String.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(OK);
+
+        DocumentContext context = JsonPath.parse(getResponse.getBody());
+        Number id = context.read("$.id");
+        String uri = context.read("$.uri");
+
+        assertThat(id).isEqualTo(1);
+        assertThat(uri).isEqualTo("http://127.0.0.1:3000");
+    }
+
+
+    @Test
+    void shouldDeleteOrigin(){
+        //create a delete request
+        ResponseEntity<Void> deleteResponse = template.exchange(
+                "/api/origins/1", DELETE, null, Void.class
+        );
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(NO_CONTENT);
+        //Get the deleted task
+        ResponseEntity<String> getResponse = template.getForEntity("/api/origins/1", String.class);
+        //confirm that deleted task is not found
+        assertThat(getResponse.getStatusCode()).isEqualTo(NOT_FOUND);
+    }
 
 }

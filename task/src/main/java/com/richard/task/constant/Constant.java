@@ -10,4 +10,6 @@ public interface Constant {
     String STATUS_VALIDATION_MESSAGE = "Invalid status. Status must be To do, Completed, Cancelled, On Hold, Deferred, In Progress, Pending, Failed or Reviewing";
     String TITLE_REGEXP = "^[A-Za-z0-9- ]+$";
     String DESCRIPTION_REGEXP = "^[A-Za-z0-9.,!?'\"()\\-:;\\s]+$";
+    String URL_REGEX_PATTERN = "^(https?:\\/\\/)?((([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,})|(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})(:\\d{1,5})?$";
+
 }
