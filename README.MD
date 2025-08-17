@@ -13,11 +13,7 @@ A simple API enabling HMCTS's caseworkers keep track of their tasks from a web a
   ```$ git clone https://github.com/daveace007/back-end-hmcts-dts-developer-challenge.git```
 * Change directory by issuing:
 
-<<<<<<< HEAD
-  ```$ cd hmcts-dts-developer-challenge/```
-=======
   ```$ cd back-end-hmcts-dts-developer-challenge/```
->>>>>>> working-branch
 * Run the ```start.sh``` script to initiate the build process then test and launch the server from terminal by issuing:
   ```$ ./start.sh```
 
